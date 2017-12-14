@@ -9,7 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "crypto": "^1.0.1"
+    "crypto": "^1.0.1",
+    "gdax": "github:coinbase/gdax-node"
   },
   "devDependencies": {
     "eslint": "^4.13.1",
