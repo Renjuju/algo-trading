@@ -3,6 +3,8 @@ const express = require('express');
 const bunyan = require('bunyan');
 const cors = require('cors');
 
+const http = require('http');
+
 const log = bunyan.createLogger({
   name: 'algo-trader',
   // streams: [{
@@ -18,8 +20,41 @@ const { key, b64secret, passphrase } = secrets;
 const apiURI = 'https://api.gdax.com';
 
 const authedClient = new Gdax.AuthenticatedClient(key, b64secret, passphrase, apiURI);
+const websocket = new Gdax.WebsocketClient(['ETH-USD']);
 
+let currentEthTradePrice = 0;
+let count = 0;
+let total = 0;
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  websocket.on('message', (data) => {
+    if (data.type === 'received') {
+      if (!isNaN(parseInt(data.price, 10))) {
+        count += 1;
+        currentEthTradePrice = parseFloat(data.price, 10);
+        total += currentEthTradePrice;
+      }
+      log.info(`received at: ${data.price}`);
+      if (data.price) {
+        res.write(JSON.stringify(data));
+      }
+    }
+  });
+}).listen(8080);
+// websocket.on('message', (data) => {
+//   if (data.type == 'received') {
+//     log.info(`received at: ${data.price}`);
+//   }
+// });
 // Gets account information [BTC, ETH, LTC, USD]
+
+app.get('/getEthValue', (req, res) => {
+  res.send({
+    currentEthTradePrice,
+    count,
+    average: total / count,
+  });
+});
 app.get('/getAccounts', (req, res) => {
   authedClient.getAccounts((error, response, data) => {
     if (error) {

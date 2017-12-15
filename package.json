@@ -14,7 +14,8 @@
     "cors": "^2.8.4",
     "crypto": "^1.0.1",
     "express": "^4.16.2",
-    "gdax": "github:coinbase/gdax-node"
+    "gdax": "github:coinbase/gdax-node",
+    "ws": "^3.3.2"
   },
   "devDependencies": {
     "eslint": "^4.13.1",
