@@ -20,27 +20,32 @@ const { key, b64secret, passphrase } = secrets;
 const apiURI = 'https://api.gdax.com';
 
 const authedClient = new Gdax.AuthenticatedClient(key, b64secret, passphrase, apiURI);
-const websocket = new Gdax.WebsocketClient(['ETH-USD']);
+const websocket = new Gdax.WebsocketClient(['BTC-USD', 'ETH-USD']);
 
 let currentEthTradePrice = 0;
+let currentBtcTradePrice = 0;
 let count = 0;
-let total = 0;
-http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/html' });
-  websocket.on('message', (data) => {
-    if (data.type === 'received') {
-      if (!isNaN(parseInt(data.price, 10))) {
-        count += 1;
-        currentEthTradePrice = parseFloat(data.price, 10);
-        total += currentEthTradePrice;
+
+websocket.on('message', (data) => {
+  if (data.type === 'received') {
+    if (!isNaN(parseInt(data.price, 10))) {
+      count += 1;
+      if (data.product_id === 'BTC-USD') {
+        currentBtcTradePrice = parseFloat(data.price, 10);
       }
-      log.info(`received at: ${data.price}`);
-      if (data.price) {
-        res.write(JSON.stringify(data));
+
+      if (data.product_id === 'ETH-USD') {
+        currentEthTradePrice = parseFloat(data.price, 10);
       }
     }
-  });
-}).listen(8080);
+    log.info(data);
+  }
+});
+
+// http.createServer((req, res) => {
+//   res.writeHead(200, { 'Content-Type': 'text/html' });
+//
+// }).listen(8080);
 // websocket.on('message', (data) => {
 //   if (data.type == 'received') {
 //     log.info(`received at: ${data.price}`);
@@ -51,8 +56,8 @@ http.createServer((req, res) => {
 app.get('/getEthValue', (req, res) => {
   res.send({
     currentEthTradePrice,
+    currentBtcTradePrice,
     count,
-    average: total / count,
   });
 });
 app.get('/getAccounts', (req, res) => {
