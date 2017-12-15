@@ -1,6 +1,7 @@
 const Gdax = require('gdax');
 const express = require('express');
 const bunyan = require('bunyan');
+const cors = require('cors');
 
 const log = bunyan.createLogger({
   name: 'algo-trader',
@@ -9,7 +10,8 @@ const log = bunyan.createLogger({
   // }],
 });
 
-const app = express();
+const app = express().use(cors());
+
 const secrets = require('./secrets');
 
 const { key, b64secret, passphrase } = secrets;
